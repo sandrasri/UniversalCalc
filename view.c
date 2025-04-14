@@ -249,125 +249,127 @@ static void transpose_clicked(GtkButton *button, gpointer user_data) {
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
-    GtkWidget *window, *grid, *buttonReset, *labelA, *labelB, *labelAns, *label, *labelNum, *labelSecAns;
-    GtkWidget *buttonAdd, *buttonSub, *buttonMult, *buttonScal, *buttonTran, *buttonInv;
+    GtkWidget *window, *grid, *mainBox;
+    GtkCssProvider *cssProvider;
+    GtkStyleContext *context;
+
     AppWidgets *widgets = g_new(AppWidgets, 1);
 
     window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Matrix Mathematics");
-    gtk_window_set_default_size(GTK_WINDOW(window), 700, 600);
+    gtk_window_set_default_size(GTK_WINDOW(window), 800, 700);
 
-    grid = gtk_grid_new();
-    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
-    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
-    gtk_container_add(GTK_CONTAINER(window), grid);
+    // Load CSS for styling
+    cssProvider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(cssProvider,
+        "#frameTop { background-color: #e0f7fa; padding: 20px; border-radius: 10px; }"
+        "#frameBottom { background-color: #f1f8e9; padding: 20px; border-radius: 10px; }"
+        "button { margin: 4px; padding: 6px 12px; font-weight: bold; }",
+        -1, NULL
+    );
 
-    // Labels for the matrices
-    labelA = gtk_label_new("Matrix A");
-    gtk_grid_attach(GTK_GRID(grid), labelA, 0, 0, 3, 1);
+    mainBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
+    gtk_container_add(GTK_CONTAINER(window), mainBox);
 
-    labelB = gtk_label_new("Matrix B");
-    gtk_grid_attach(GTK_GRID(grid), labelB, 4, 0, 3, 1);
+    // ----- Top Frame -----
+    GtkWidget *frameTop = gtk_frame_new(NULL);
+    gtk_widget_set_name(frameTop, "frameTop");
+    gtk_box_pack_start(GTK_BOX(mainBox), frameTop, TRUE, TRUE, 10);
 
-    labelAns = gtk_label_new("Matrix Solution");
-    gtk_grid_attach(GTK_GRID(grid), labelAns, 20, 0, 3, 1);
+    GtkWidget *topGrid = gtk_grid_new();
+    gtk_grid_set_column_spacing(GTK_GRID(topGrid), 5);
+    gtk_grid_set_row_spacing(GTK_GRID(topGrid), 5);
+    gtk_container_add(GTK_CONTAINER(frameTop), topGrid);
 
-    //Labels for other half
-    label = gtk_label_new("Matrix");
-    gtk_grid_attach(GTK_GRID(grid), label, 0, 20, 3, 1);
+    GtkWidget *labelA = gtk_label_new("Matrix A");
+    gtk_grid_attach(GTK_GRID(topGrid), labelA, 0, 0, 3, 1);
 
-    labelNum = gtk_label_new("Scalar Variable");
-    gtk_grid_attach(GTK_GRID(grid), labelNum, 4, 20, 3, 1);
+    GtkWidget *labelB = gtk_label_new("Matrix B");
+    gtk_grid_attach(GTK_GRID(topGrid), labelB, 4, 0, 3, 1);
 
-    labelSecAns = gtk_label_new("Matrix Solution");
-    gtk_grid_attach(GTK_GRID(grid), labelSecAns, 20, 20, 3, 1);
+    GtkWidget *labelAns = gtk_label_new("Matrix Solution");
+    gtk_grid_attach(GTK_GRID(topGrid), labelAns, 20, 0, 3, 1);
 
-    // Entries for Matrix A
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             widgets->entriesA[i][j] = gtk_entry_new();
-            gtk_entry_set_width_chars(GTK_ENTRY(widgets->entriesA[i][j]), 5);
-            gtk_grid_attach(GTK_GRID(grid), widgets->entriesA[i][j], j, i + 1, 1, 1);
-        }
-    }
+            gtk_grid_attach(GTK_GRID(topGrid), widgets->entriesA[i][j], j, i + 1, 1, 1);
 
-    // Entries for Matrix B
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
             widgets->entriesB[i][j] = gtk_entry_new();
-            gtk_entry_set_width_chars(GTK_ENTRY(widgets->entriesB[i][j]), 5);
-            gtk_grid_attach(GTK_GRID(grid), widgets->entriesB[i][j], j + 4, i + 1, 1, 1);
-        }
-    }
+            gtk_grid_attach(GTK_GRID(topGrid), widgets->entriesB[i][j], j + 4, i + 1, 1, 1);
 
-    // Entries for Matrix Answer
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
             widgets->entriesAns[i][j] = gtk_entry_new();
-            gtk_entry_set_width_chars(GTK_ENTRY(widgets->entriesAns[i][j]), 5);
-            gtk_grid_attach(GTK_GRID(grid), widgets->entriesAns[i][j], j + 20, i + 1, 1, 1);
+            gtk_grid_attach(GTK_GRID(topGrid), widgets->entriesAns[i][j], j + 20, i + 1, 1, 1);
         }
     }
 
-    // Entries for Matrix Base
+    GtkWidget *buttonAdd = gtk_button_new_with_label("Matrix Addition");
+    gtk_grid_attach(GTK_GRID(topGrid), buttonAdd, 7, 1, 2, 1);
+    g_signal_connect(buttonAdd, "clicked", G_CALLBACK(addition_clicked), widgets);
+
+    GtkWidget *buttonSub = gtk_button_new_with_label("Matrix Subtraction");
+    gtk_grid_attach(GTK_GRID(topGrid), buttonSub, 7, 2, 2, 1);
+    g_signal_connect(buttonSub, "clicked", G_CALLBACK(subtraction_clicked), widgets);
+
+    GtkWidget *buttonMult = gtk_button_new_with_label("Matrix Multiplication");
+    gtk_grid_attach(GTK_GRID(topGrid), buttonMult, 7, 3, 2, 1);
+    g_signal_connect(buttonMult, "clicked", G_CALLBACK(multiplication_clicked), widgets);
+
+    GtkWidget *buttonReset = gtk_button_new_with_label("Reset Matrices");
+    gtk_grid_attach(GTK_GRID(topGrid), buttonReset, 0, 7, 7, 1);
+    g_signal_connect(buttonReset, "clicked", G_CALLBACK(reset_clicked), widgets);
+
+    // ----- Bottom Frame -----
+    GtkWidget *frameBottom = gtk_frame_new(NULL);
+    gtk_widget_set_name(frameBottom, "frameBottom");
+    gtk_box_pack_start(GTK_BOX(mainBox), frameBottom, TRUE, TRUE, 10);
+
+    GtkWidget *bottomGrid = gtk_grid_new();
+    gtk_grid_set_column_spacing(GTK_GRID(bottomGrid), 5);
+    gtk_grid_set_row_spacing(GTK_GRID(bottomGrid), 5);
+    gtk_container_add(GTK_CONTAINER(frameBottom), bottomGrid);
+
+    GtkWidget *label = gtk_label_new("Matrix");
+    gtk_grid_attach(GTK_GRID(bottomGrid), label, 0, 0, 3, 1);
+
+    GtkWidget *labelNum = gtk_label_new("Scalar Variable");
+    gtk_grid_attach(GTK_GRID(bottomGrid), labelNum, 4, 0, 3, 1);
+
+    GtkWidget *labelSecAns = gtk_label_new("Matrix Solution");
+    gtk_grid_attach(GTK_GRID(bottomGrid), labelSecAns, 20, 0, 3, 1);
+
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             widgets->entriesBase[i][j] = gtk_entry_new();
-            gtk_entry_set_width_chars(GTK_ENTRY(widgets->entriesBase[i][j]), 5);
-            gtk_grid_attach(GTK_GRID(grid), widgets->entriesBase[i][j], j, i + 22, 1, 1);
-        }
-    }
+            gtk_grid_attach(GTK_GRID(bottomGrid), widgets->entriesBase[i][j], j, i + 1, 1, 1);
 
-    // Entries for Matrix SecondAnswer
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
             widgets->entriesSecAns[i][j] = gtk_entry_new();
-            gtk_entry_set_width_chars(GTK_ENTRY(widgets->entriesSecAns[i][j]), 5);
-            gtk_grid_attach(GTK_GRID(grid), widgets->entriesSecAns[i][j], j + 20, i + 22, 1, 1);
+            gtk_grid_attach(GTK_GRID(bottomGrid), widgets->entriesSecAns[i][j], j + 20, i + 1, 1, 1);
         }
     }
 
     widgets->entryScalar = gtk_entry_new();
-    gtk_entry_set_width_chars(GTK_ENTRY(widgets->entryScalar), 5);
-    gtk_grid_attach(GTK_GRID(grid), widgets->entryScalar, 4, 23, 3, 1);
+    gtk_grid_attach(GTK_GRID(bottomGrid), widgets->entryScalar, 4, 2, 3, 1);
 
-    //Matrix Addition Button
-    buttonAdd = gtk_button_new_with_label("Matrix Addition");
-    gtk_grid_attach(GTK_GRID(grid), buttonAdd, 7, 1, 2, 1);
-    g_signal_connect(buttonAdd, "clicked", G_CALLBACK(addition_clicked), widgets);
-
-    //Matrix Subtraction Button
-    buttonSub = gtk_button_new_with_label("Matrix Subtraction");
-    gtk_grid_attach(GTK_GRID(grid), buttonSub, 7, 2, 2, 1);
-    g_signal_connect(buttonSub, "clicked", G_CALLBACK(subtraction_clicked), widgets);
-
-    //Matrix Multiplication Button
-    buttonMult = gtk_button_new_with_label("Matrix Multiplication");
-    gtk_grid_attach(GTK_GRID(grid), buttonMult, 7, 3, 2, 1);
-    g_signal_connect(buttonMult, "clicked", G_CALLBACK(multiplication_clicked), widgets);
-
-    //Matrix Scalar Multiplication Button
-    buttonScal = gtk_button_new_with_label("Scalar Multiplication");
-    gtk_grid_attach(GTK_GRID(grid), buttonScal, 7, 22, 2, 1);
+    GtkWidget *buttonScal = gtk_button_new_with_label("Scalar Multiplication");
+    gtk_grid_attach(GTK_GRID(bottomGrid), buttonScal, 7, 1, 2, 1);
     g_signal_connect(buttonScal, "clicked", G_CALLBACK(scalar_multiplication_clicked), widgets);
 
-    //Matrix Inverse button
-    buttonInv = gtk_button_new_with_label("Matrix Inverse");
-    gtk_grid_attach(GTK_GRID(grid), buttonInv, 7, 23, 2, 1);
+    GtkWidget *buttonInv = gtk_button_new_with_label("Matrix Inverse");
+    gtk_grid_attach(GTK_GRID(bottomGrid), buttonInv, 7, 2, 2, 1);
     g_signal_connect(buttonInv, "clicked", G_CALLBACK(inverse_clicked), widgets);
 
-    // Matrix Transpose Button
-    buttonTran = gtk_button_new_with_label("Matrix Transpose");
-    gtk_grid_attach(GTK_GRID(grid), buttonTran, 7, 24, 2, 1);
+    GtkWidget *buttonTran = gtk_button_new_with_label("Matrix Transpose");
+    gtk_grid_attach(GTK_GRID(bottomGrid), buttonTran, 7, 3, 2, 1);
     g_signal_connect(buttonTran, "clicked", G_CALLBACK(transpose_clicked), widgets);
 
-    // Reset Button
-    buttonReset = gtk_button_new_with_label("Reset Matrices");
-    gtk_grid_attach(GTK_GRID(grid), buttonReset, 0, 7, 7, 1);
-    g_signal_connect(buttonReset, "clicked", G_CALLBACK(reset_clicked), widgets);
+    // Apply CSS styling to the window and children
+    context = gtk_widget_get_style_context(window);
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(cssProvider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+    gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(cssProvider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
     gtk_widget_show_all(window);
-}
+}    
 
 int main(int argc, char **argv) {
     GtkApplication *app;
