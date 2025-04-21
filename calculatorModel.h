@@ -31,7 +31,8 @@ void inverse_matrix(int matrixBase[3][3],double matrixSecAns[3][3]);
 void transpose_matrix(int matrixBase[3][3], double matrixSecAns[3][3]);
 
 // Conversion Calculator
-double conversion(char conversion[50], char og_conversion[50], double value);
+double perform_conversion(const char *conversion, const char *og_conversion, double value);
+char* compute_numconversion(const char *from, const char *to, int number);
 
 
 #endif
